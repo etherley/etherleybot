@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "es6",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist",
+        "baseUrl": ".",
+        "types": [
+            "node",
+            "express"
+        ],
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "paths": {
+            "@update/*": [
+                "src/@update/*"
+            ],
+            "@eth/*": [
+                "src/@eth/*"
+            ],
+            "@abi/*": [
+                "src/@abi/*"
+            ],
+            "@contract/*": [
+                "src/@contract/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules/*",
+        "dist/"
+    ]
+}
