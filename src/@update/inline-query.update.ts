@@ -1,3 +1,5 @@
+import { Address } from '@eth/address.eth';
+
 export class InlineQuery {
 
     query: string = undefined
@@ -14,29 +16,53 @@ export class InlineQuery {
         return regex.test(this.query)
     }
 
-    makeENSResponse() {
-        this.ctx.telegram.answerInlineQuery(this.ctx.inlineQuery.id, [
+    makeENSResponse(address: Address) {
+        if (address.isValid()) {
+            return [
+                {
+                    type: 'document',
+                    id: '123',
+                    title: `ENS for ${this.query}`,
+                    document_url: 'https://www.dropbox.com/s/mvehkok2b0lss5j/D-T%2BWHITE%2BPAPER.pdf',
+                    mime_type: 'application/pdf',
+                    description: `Found: ${address.toChecksumAddress()}`,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{
+                                text: 'See on etherscan.io',
+                                url: `https://etherscan.io/address/${this.query}`,
+                            }]
+                        ],
+                    },
+                    input_message_content: {
+                        message_text: `${this.query} resolves to ${address.toChecksumAddress()}`,
+                        disable_web_page_preview: true,
+                    }
+                }
+            ]
+        }
+        return [
             {
                 type: 'document',
                 id: '123',
                 title: `ENS for ${this.query}`,
                 document_url: 'https://www.dropbox.com/s/mvehkok2b0lss5j/D-T%2BWHITE%2BPAPER.pdf',
                 mime_type: 'application/pdf',
-                description: `Found: 123`,
+                description: `Not Found 🙃`,
                 reply_markup: {
                     inline_keyboard: [
                         [{
-                            text: 'etherscan.io',
-                            url: 'https://etherscan.io/address/0x24b2e8c86cc5a378b184b64728db1a8484d844ec',
+                            text: 'Make it yours!',
+                            url: `https://ens.domains/`,
                         }]
                     ],
                 },
                 input_message_content: {
-                    message_text: 'This is a text instead of file',
+                    message_text: `ENS address ${this.query} has no ETH address`,
                     disable_web_page_preview: true,
                 }
             }
-        ])
+        ]
     }
 
 }

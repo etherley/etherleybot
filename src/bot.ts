@@ -1,6 +1,7 @@
 import Telegraf from 'telegraf';
 import { InlineQuery } from '@update/inline-query.update';
 import { ENSProvider } from '@eth/ens.eth';
+import { Address } from '@eth/address.eth';
 
 export class EtherleyBot {
 
@@ -21,7 +22,13 @@ export class EtherleyBot {
         //     console.log(ctx)
         // })
 
-        this.bot.on('inline_query', ctx => this.parseInlineQuery(ctx))
+        this.bot.catch((err) => {
+            console.log('Ooops', err)
+        })
+
+        this.bot.on('inline_query', ctx => {
+            this.parseInlineQuery(ctx)
+        })
 
         this.bot.start((ctx: any) => ctx.reply('Welcome'))
         this.bot.help((ctx: any) => ctx.reply('Send me a sticker'))
@@ -30,16 +37,22 @@ export class EtherleyBot {
         this.bot.launch()
     }
 
-    parseInlineQuery(ctx: any) {
+    async parseInlineQuery(ctx: any) {
         console.info('INLINE QUERY')
         console.log(ctx.inlineQuery)
 
         const IQ: InlineQuery = new InlineQuery(ctx.inlineQuery.query, ctx)
 
+        let response;
         if (IQ.isENSAddress()) {
             console.log(`${IQ.query} is ENS Address`)
-            this.ens.lookup(IQ.query)
-            // IQ.makeENSResponse()
+            try {
+                const address: Address = await this.ens.lookup(IQ.query)
+                response = IQ.makeENSResponse(address)
+            } catch (address) {
+                response = IQ.makeENSResponse(address)
+            }
+            ctx.telegram.answerInlineQuery(ctx.inlineQuery.id, response)
         }
     }
 
