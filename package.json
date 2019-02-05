@@ -31,6 +31,7 @@
     "@update": "./dist/@update",
     "@eth": "./dist/@eth",
     "@contract": "./dist/@contract",
-    "@abi": "./dist/@abi"
+    "@abi": "./dist/@abi",
+    "@command": "./dist/@command"
   }
 }

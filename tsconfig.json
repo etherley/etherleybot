@@ -25,6 +25,9 @@
             "@abi/*": [
                 "src/@abi/*"
             ],
+            "@command/*": [
+                "src/@command/*"
+            ],
             "@contract/*": [
                 "src/@contract/*"
             ]
