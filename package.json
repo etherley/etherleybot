@@ -23,7 +23,9 @@
   },
   "dependencies": {
     "eth-ens-namehash": "^2.0.8",
+    "ethers": "^4.0.23",
     "express": "^4.16.4",
+    "jsonfile": "^5.0.0",
     "telegraf": "^3.27.0",
     "web3": "^1.0.0-beta.41"
   },

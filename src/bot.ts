@@ -3,6 +3,7 @@ import { InlineQuery } from '@update/inline-query.update';
 import { ENSProvider } from '@eth/ens.eth';
 import { Address } from '@eth/address.eth';
 import { ENSCommand } from '@command/ens.command';
+import { NewCommand } from '@command/new.command';
 
 export class EtherleyBot {
 
@@ -16,12 +17,15 @@ export class EtherleyBot {
 
     init() {
         console.log('Initializing bot')
-        // this.bot.use((ctx: any) => {
-        //     console.log(ctx.message)
-        //     console.log(ctx.inlineQuery)
-        //     console.log(ctx.from)
-        //     console.log(ctx)
-        // })
+        this.bot.use((ctx, next) => {
+            console.log(ctx.message)
+            console.log(ctx.inlineQuery)
+            console.log(ctx.from)
+            console.log(ctx)
+            return next(ctx).then(res => {
+                console.log(res)
+            })
+        })
 
         this.bot.catch((err) => {
             console.log('Ooops', err)
@@ -34,7 +38,6 @@ export class EtherleyBot {
         this.handleCommands()
 
         this.bot.start((ctx: any) => ctx.reply('Welcome'))
-        this.bot.command('oldschool', (ctx) => ctx.reply('Hello'))
         // this.bot.help((ctx: any) => ctx.reply('Send me a sticker'))
         // this.bot.on('sticker', (ctx: any) => ctx.reply('👍'))
         // this.bot.hears('hi', (ctx: any) => ctx.reply('Hey there'))
@@ -43,6 +46,7 @@ export class EtherleyBot {
 
     handleCommands() {
         this.bot.command(['ens', 'ENS'], ctx => { (new ENSCommand(ctx)).reply() })
+        this.bot.command(['new', 'NEW', 'New', 'newwallet'], ctx => { (new NewCommand(ctx)).reply() })
     }
 
     async parseInlineQuery(ctx: any) {
