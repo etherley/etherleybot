@@ -29,6 +29,8 @@ export class NewCommand {
                             {
                                 text: '/new erc20',
                             },
+                        ],
+                        [
                             {
                                 text: '/new ICO',
                             },

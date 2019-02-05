@@ -37,11 +37,31 @@ export class EtherleyBot {
 
         this.handleCommands()
 
-        this.bot.start((ctx: any) => ctx.reply('Welcome'))
-        // this.bot.help((ctx: any) => ctx.reply('Send me a sticker'))
-        // this.bot.on('sticker', (ctx: any) => ctx.reply('👍'))
-        // this.bot.hears('hi', (ctx: any) => ctx.reply('Hey there'))
+        this.onStart()
+        this.onHelp()
+
         this.bot.launch()
+    }
+
+    onStart() {
+        this.bot.start(ctx => ctx.reply(`Hi, I'm Etherley,\nthe most reliable Ethereum bot.\n\nI can handle several tasks for you, like generating a wallet, register and search for ENS names, sign transactions, interact with smart-contracts and send ETH payments.\n\nType /help for more...`))
+    }
+
+    onHelp() {
+        this.bot.help(ctx => ctx.reply(`Use these commands to summon me anytime, anywhere:`, {
+            reply_markup: {
+                keyboard: [
+                    [
+                        {
+                            text: '/new',
+                        },
+                        {
+                            text: '/ens',
+                        },
+                    ],
+                ],
+            }
+        }))
     }
 
     handleCommands() {
