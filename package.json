@@ -1,12 +1,11 @@
 {
   "name": "etherleybot",
   "version": "1.0.0",
-  "description": "",
+  "description": "The most reliable Ethereum bot",
   "main": "dist/server.js",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
-    "prestart": "npm run build",
     "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -35,5 +34,9 @@
     "@contract": "./dist/@contract",
     "@abi": "./dist/@abi",
     "@command": "./dist/@command"
+  },
+  "engines": {
+    "node": "10.x",
+    "npm": "6.x"
   }
 }
