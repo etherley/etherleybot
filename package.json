@@ -7,18 +7,12 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "start": "node .",
-    "dev": "npm run build; NODE_ENV=dev node .",
+    "dev:build": "npm run build; npm run start",
+    "dev:watch": "NODE_ENV=dev ./node_modules/.bin/nodemon --exec npm run dev:build --watch src --watch node_modules --ext ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@types/express": "^4.16.1",
-    "@types/node": "^10.12.21",
-    "codelyzer": "^4.5.0",
-    "tslint": "^5.12.1",
-    "typescript": "^3.3.1"
-  },
   "dependencies": {
     "dotenv": "^6.2.0",
     "module-alias": "^2.1.0",
@@ -28,6 +22,14 @@
     "jsonfile": "^5.0.0",
     "telegraf": "^3.27.0",
     "web3": "^1.0.0-beta.41"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/node": "^10.12.21",
+    "codelyzer": "^4.5.0",
+    "nodemon": "^1.18.10",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1"
   },
   "_moduleAliases": {
     "@update": "./dist/@update",
@@ -40,5 +42,10 @@
   "engines": {
     "node": "10.x",
     "npm": "6.x"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "dist/*"
+    ]
   }
 }

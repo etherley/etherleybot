@@ -1,11 +1,14 @@
 require('module-alias/register')
 require('dotenv').config()
 
+import Web3 from 'web3';
 import app from './app';
 import EtherleyBot from './bot';
 import bodyParser = require('body-parser');
 import Wallet from '@eth/wallet.eth';
 import Cypher from '@lib/cypher.lib';
+import { namehash } from 'ethers/utils';
+import VaultContract from '@contract/Vault.contract';
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -16,12 +19,21 @@ if (process.env.NODE_ENV === 'dev') {
     console.log(req.body)
 
     const wallet = new Wallet()
+    const vault = new VaultContract()
+
     wallet.generateRandom()
-    const cypher = new Cypher()
-    cypher.encrypt(wallet.toBuffer()).then(encrypted => {
-      // TODO store encrypted.toString('hex' | 'base64') in Vault Wallet.secret
-      cypher.decrypt(encrypted).then(decrypted => {
-        console.log(JSON.parse(decrypted.toString('utf8')))
+    Promise.all([
+      vault.encrypt(wallet.mnemonic, 'mnemonic'),
+      vault.encrypt(wallet.privateKey, 'privateKey'),
+    ]).then(r => {
+      console.log(vault.encrypted)
+      console.log(`\n`)
+      Promise.all([
+        vault.decrypt(Buffer.from(vault.encrypted.mnemonic, 'hex'), 'mnemonic'),
+        vault.decrypt(Buffer.from(vault.encrypted.privateKey, 'hex'), 'privateKey'),
+      ]).then(() => {
+        console.log(vault.decrypted)
+        console.log(`\n`)
         res.sendStatus(200)
       }).catch(error => {
         console.error(error)
@@ -34,7 +46,9 @@ if (process.env.NODE_ENV === 'dev') {
   })
 
   app.listen(process.env.PORT, () => {
+    console.log('[ENV] dev')
     console.log(`Express server listening on port ${process.env.PORT}`)
+    console.log(`\n\n`)
   })
 } else {
   const BOT = new EtherleyBot(process.env.BOT_TOKEN)
