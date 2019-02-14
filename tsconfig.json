@@ -1,43 +1,46 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "target": "es6",
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "outDir": "dist",
-        "baseUrl": ".",
-        "resolveJsonModule": true,
-        "types": [
-            "node",
-            "express"
-        ],
-        "typeRoots": [
-            "node_modules/@types"
-        ],
-        "paths": {
-            "@update/*": [
-                "src/@update/*"
-            ],
-            "@eth/*": [
-                "src/@eth/*"
-            ],
-            "@abi/*": [
-                "src/@abi/*"
-            ],
-            "@command/*": [
-                "src/@command/*"
-            ],
-            "@contract/*": [
-                "src/@contract/*"
-            ]
-        }
-    },
-    "include": [
-        "src/**/*"
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "types": [
+      "node",
+      "express"
     ],
-    "exclude": [
-        "node_modules/*",
-        "dist/"
-    ]
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "paths": {
+      "@update/*": [
+        "src/@update/*"
+      ],
+      "@eth/*": [
+        "src/@eth/*"
+      ],
+      "@abi/*": [
+        "src/@abi/*"
+      ],
+      "@command/*": [
+        "src/@command/*"
+      ],
+      "@lib/*": [
+        "src/@lib/*"
+      ],
+      "@contract/*": [
+        "src/@contract/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules/*",
+    "dist/"
+  ]
 }

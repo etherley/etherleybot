@@ -7,7 +7,7 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "start": "node .",
-    "dev": "NODE_ENV=dev node .",
+    "dev": "npm run build; NODE_ENV=dev node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -34,7 +34,8 @@
     "@eth": "./dist/@eth",
     "@contract": "./dist/@contract",
     "@abi": "./dist/@abi",
-    "@command": "./dist/@command"
+    "@command": "./dist/@command",
+    "@lib": "./dist/@lib"
   },
   "engines": {
     "node": "10.x",

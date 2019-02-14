@@ -4,12 +4,33 @@ require('dotenv').config()
 import app from './app';
 import EtherleyBot from './bot';
 import bodyParser = require('body-parser');
+import Wallet from '@eth/wallet.eth';
+import Cypher from '@lib/cypher.lib';
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
 if (process.env.NODE_ENV === 'dev') {
   app.post('/dev', function (req, res) {
     const body = req.body
     console.log(req.body)
-    res.sendStatus(200)
+
+    const wallet = new Wallet()
+    wallet.generateRandom()
+    const cypher = new Cypher()
+    cypher.encrypt(wallet.toBuffer()).then(encrypted => {
+      // TODO store encrypted.toString('hex' | 'base64') in Vault Wallet.secret
+      cypher.decrypt(encrypted).then(decrypted => {
+        console.log(JSON.parse(decrypted.toString('utf8')))
+        res.sendStatus(200)
+      }).catch(error => {
+        console.error(error)
+        res.sendStatus(500)
+      })
+    }).catch(error => {
+      console.error(error)
+      res.sendStatus(500)
+    })
   })
 
   app.listen(process.env.PORT, () => {
@@ -19,9 +40,6 @@ if (process.env.NODE_ENV === 'dev') {
   const BOT = new EtherleyBot(process.env.BOT_TOKEN)
   BOT.stop()
   BOT.init()
-
-  app.use(bodyParser.json())
-  app.use(bodyParser.urlencoded({ extended: true }))
 
   app.post('/stripe', function (req, res) {
     const body = req.body
