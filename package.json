@@ -29,17 +29,18 @@
     "codelyzer": "^4.5.0",
     "nodemon": "^1.18.10",
     "openzeppelin-solidity": "^2.1.2",
+    "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1"
   },
   "_moduleAliases": {
     "@root": ".",
-    "@update": "dist/src/update",
-    "@eth": "dist/src/eth",
-    "@contract": "dist/src/contract",
-    "@abi": "dist/src/abi",
-    "@command": "dist/src/command",
-    "@lib": "dist/src/lib",
+    "@update": "dist/update",
+    "@eth": "dist/eth",
+    "@contract": "dist/contract",
+    "@abi": "dist/abi",
+    "@command": "dist/command",
+    "@lib": "dist/lib",
     "@test": "dist/test"
   },
   "engines": {

@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import Cypher from '@lib/cypher.lib';
-import { Web3Provider } from '@eth/web3.eth';
+import Web3Provider from '@eth/web3.eth';
 
 interface IWalletStruct {
   mnemonic: string,
@@ -12,21 +12,13 @@ interface IWalletStruct {
 export default class VaultContract {
 
   instance: ethers.Wallet | any
-  current: Buffer
-  field: string
-  hex: string
   web3: Web3Provider = new Web3Provider()
+  field: string
 
   encrypted = <IWalletStruct>{}
   decrypted = <IWalletStruct>{}
 
   constructor() { }
-
-  prepare(value: Buffer, field: keyof IWalletStruct) {
-    this.current = value
-    this.field = field
-    return this
-  }
 
   encrypt(data: Buffer, field: keyof IWalletStruct): Promise<void> {
     const cypher = new Cypher()
@@ -53,9 +45,5 @@ export default class VaultContract {
         reject(error)
       })
     })
-  }
-
-  toBuffer(): Buffer {
-    return Buffer.from(JSON.stringify(this.instance))
   }
 }

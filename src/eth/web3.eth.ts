@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 
-export class Web3Provider {
+export default class Web3Provider {
 
   utils: any
   instance: Web3

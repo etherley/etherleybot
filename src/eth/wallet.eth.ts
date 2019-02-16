@@ -1,6 +1,4 @@
 import { ethers } from 'ethers';
-import Cypher from '@lib/cypher.lib';
-import { Web3Provider } from '@eth/web3.eth';
 
 export default class Wallet {
 

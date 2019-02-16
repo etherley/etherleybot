@@ -5,25 +5,25 @@ import "node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Vault is Ownable {
 
     struct Wallet {
-        bytes32 _alias;
-        bytes32 mnemonic;
-        bytes32 privateKey;
+        string _alias;
+        string mnemonic;
+        string privateKey;
     }
 
-    mapping(bytes32 => mapping(address => Wallet)) private walletsByUserID;
-    mapping(bytes32 => address[]) private walletAddressesByUserID;
+    mapping(uint256 => mapping(address => Wallet)) private walletsByUserID;
+    mapping(uint256 => address[]) private walletAddressesByUserID;
 
     function getWallet(
-        bytes32 UID, 
+        uint256 UID,
         address _wallet
-    ) 
-    public 
-    view 
-    onlyOwner 
+    )
+    public
+    view
+    onlyOwner
     returns (
-        bytes32 _alias,
-        bytes32 _mnemonic,
-        bytes32 _privateKey
+        string memory alias,
+        string memory mnemonic,
+        string memory privateKey
     ) {
         return (
             walletsByUserID[UID][_wallet]._alias,
@@ -33,14 +33,14 @@ contract Vault is Ownable {
     }
 
     function storeWallet(
-        bytes32 UID, 
-        address _wallet, 
-        bytes32 _alias, 
-        bytes32 _mnemonic,
-        bytes32 _privateKey
-    ) 
-    public 
-    onlyOwner 
+        uint256 UID,
+        address _wallet,
+        string memory _alias,
+        string memory _mnemonic,
+        string memory _privateKey
+    )
+    public
+    onlyOwner
     returns (bool) {
         walletsByUserID[UID][_wallet]._alias = _alias;
         walletsByUserID[UID][_wallet].mnemonic = _mnemonic;
@@ -49,11 +49,11 @@ contract Vault is Ownable {
     }
 
     function getWalletsByUserID(
-        bytes32 UID
-    ) 
-    public 
-    view 
-    onlyOwner 
+        uint256 UID
+    )
+    public
+    view
+    onlyOwner
     returns(address[] memory wallets) {
         return walletAddressesByUserID[UID];
     }
