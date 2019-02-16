@@ -17,25 +17,25 @@
     ],
     "paths": {
       "@update/*": [
-        "src/@update/*"
+        "src/update/*"
       ],
       "@eth/*": [
-        "src/@eth/*"
+        "src/eth/*"
       ],
       "@abi/*": [
-        "src/@abi/*"
+        "src/abi/*"
       ],
       "@command/*": [
-        "src/@command/*"
+        "src/command/*"
       ],
       "@lib/*": [
-        "src/@lib/*"
+        "src/lib/*"
       ],
       "@test/*": [
         "test/*"
       ],
       "@contract/*": [
-        "src/@contract/*"
+        "src/contract/*"
       ]
     }
   },
