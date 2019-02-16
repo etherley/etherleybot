@@ -28,6 +28,7 @@
     "@types/node": "^10.12.21",
     "codelyzer": "^4.5.0",
     "nodemon": "^1.18.10",
+    "openzeppelin-solidity": "^2.1.2",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1"
   },
