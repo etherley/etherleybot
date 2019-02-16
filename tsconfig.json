@@ -31,13 +31,17 @@
       "@lib/*": [
         "src/@lib/*"
       ],
+      "@test/*": [
+        "test/*"
+      ],
       "@contract/*": [
         "src/@contract/*"
       ]
     }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules/*",

@@ -2,14 +2,14 @@
   "name": "etherleybot",
   "version": "1.0.0",
   "description": "The most reliable Ethereum bot",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "start": "node .",
     "dev:build": "npm run build; npm run start",
-    "dev:watch": "NODE_ENV=dev ./node_modules/.bin/nodemon --exec npm run dev:build --watch src --watch node_modules --ext ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:test": "NODE_ENV=test ./node_modules/.bin/nodemon --exec npm run test --ignore dist --watch src --watch test --watch node_modules --ext ts",
+    "test": "npm run build; node dist/test/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -32,12 +32,14 @@
     "typescript": "^3.3.1"
   },
   "_moduleAliases": {
-    "@update": "./dist/@update",
-    "@eth": "./dist/@eth",
-    "@contract": "./dist/@contract",
-    "@abi": "./dist/@abi",
-    "@command": "./dist/@command",
-    "@lib": "./dist/@lib"
+    "@root": ".",
+    "@update": "dist/src/@update",
+    "@eth": "dist/src/@eth",
+    "@contract": "dist/src/@contract",
+    "@abi": "dist/src/@abi",
+    "@command": "dist/src/@command",
+    "@lib": "dist/src/@lib",
+    "@test": "dist/test"
   },
   "engines": {
     "node": "10.x",

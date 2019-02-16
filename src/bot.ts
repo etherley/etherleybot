@@ -57,6 +57,7 @@ export default class EtherleyBot {
     this.bot.help((ctx: ContextMessageUpdate) => { (new HelpCommand(ctx).reply()) })
     this.bot.command(['ens', 'ENS', 'Ens'], (ctx: ContextMessageUpdate) => { (new ENSCommand(ctx)).reply() })
     this.bot.command(['new', 'NEW', 'New'], (ctx: ContextMessageUpdate) => { (new NewCommand(ctx)).reply() })
+    this.bot.command(['wallet', 'WALLET', 'Wallet'], (ctx: ContextMessageUpdate) => { (new NewCommand(ctx)).reply() })
     this.bot.command(['deposit', 'DEPOSIT', 'Deposit'], (ctx: ContextMessageUpdate) => { (new DepositCommand(ctx)).reply() })
     return this
   }
