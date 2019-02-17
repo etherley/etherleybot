@@ -16,7 +16,122 @@ let web3 = new Web3Provider()
 wallet.generateRandom()
 const address = wallet.address.toString()
 
-contract('Vault Contract Test', async ([wallet1, wallet2, wallet3]) => {
+const u1 = {
+  ID: 539642123,
+  wallet1: {
+    vault: new VaultContract(),
+    instance: (new Wallet()).generateRandom(),
+    alias: 'u1-wallet1-alias'
+  },
+  wallet2: {
+    vault: new VaultContract(),
+    instance: (new Wallet()).generateRandom(),
+    alias: 'u1-wallet2-alias'
+  },
+}
+
+const u2 = {
+  ID: 739642123,
+  wallet1: {
+    vault: new VaultContract(),
+    instance: (new Wallet()).generateRandom(),
+    alias: 'u2-wallet1-alias'
+  },
+  wallet2: {
+    vault: new VaultContract(),
+    instance: (new Wallet()).generateRandom(),
+    alias: 'u2-wallet2-alias'
+  },
+}
+
+const u3 = {
+  ID: 839642123,
+  wallet1: {
+    vault: new VaultContract(),
+    instance: (new Wallet()).generateRandom(),
+    alias: 'u3-wallet1-alias'
+  },
+  wallet2: {
+    vault: new VaultContract(),
+    instance: (new Wallet()).generateRandom(),
+    alias: 'u3-wallet2-alias'
+  },
+}
+
+const test = async (user, from) => {
+  const contract = await Vault.deployed()
+
+  await Promise.all([
+    user.wallet1.vault.encrypt(user.wallet1.instance.mnemonic, 'mnemonic'),
+    user.wallet1.vault.encrypt(user.wallet1.instance.privateKey, 'privateKey'),
+    user.wallet2.vault.encrypt(user.wallet2.instance.mnemonic, 'mnemonic'),
+    user.wallet2.vault.encrypt(user.wallet2.instance.privateKey, 'privateKey'),
+  ])
+
+  await contract.storeWallet(
+    user.ID,
+    user.wallet1.instance.address.toString(),
+    user.wallet1.alias,
+    user.wallet1.vault.encrypted.mnemonic,
+    user.wallet1.vault.encrypted.privateKey,
+    {
+      from: from
+    }
+  )
+
+  await contract.storeWallet(
+    user.ID,
+    user.wallet2.instance.address.toString(),
+    user.wallet2.alias,
+    user.wallet2.vault.encrypted.mnemonic,
+    user.wallet2.vault.encrypted.privateKey,
+    {
+      from: from
+    }
+  )
+
+  const [
+    address1,
+    address2,
+  ] = await contract.getWalletsByUserID(user.ID)
+
+  assert.equal(address1, user.wallet1.instance.address.toString())
+  assert.equal(address2, user.wallet2.instance.address.toString())
+
+  const {
+    _alias: alias1,
+    mnemonic: mnemonic1,
+    privateKey: privateKey1,
+  } = await contract.getWallet(
+    user.ID,
+    address1
+  )
+
+  const {
+    _alias: alias2,
+    mnemonic: mnemonic2,
+    privateKey: privateKey2,
+  } = await contract.getWallet(
+    user.ID,
+    address2
+  )
+
+  await Promise.all([
+    user.wallet1.vault.decrypt(Buffer.from(mnemonic1, 'hex'), 'mnemonic'),
+    user.wallet1.vault.decrypt(Buffer.from(privateKey1, 'hex'), 'privateKey'),
+    user.wallet2.vault.decrypt(Buffer.from(mnemonic2, 'hex'), 'mnemonic'),
+    user.wallet2.vault.decrypt(Buffer.from(privateKey2, 'hex'), 'privateKey'),
+  ])
+
+  assert.equal(alias1, user.wallet1.alias)
+  assert.equal(alias2, user.wallet2.alias)
+  assert.equal(user.wallet1.vault.decrypted.mnemonic, user.wallet1.instance.mnemonic.toString())
+  assert.equal(user.wallet1.vault.decrypted.privateKey, user.wallet1.instance.privateKey.toString())
+  assert.equal(user.wallet2.vault.decrypted.mnemonic, user.wallet2.instance.mnemonic.toString())
+  assert.equal(user.wallet2.vault.decrypted.privateKey, user.wallet2.instance.privateKey.toString())
+}
+
+contract('Vault Contract Test', async ([wallet1]) => {
   it('should encrypt a random wallet mnemonic and privateKey', async () => {
     try {
       await Promise.all([
@@ -87,4 +202,8 @@ contract('Vault Contract Test', async ([wallet1, wallet2, wallet3]) => {
 
     assert.equal(address1, wallet.address.toString())
   })
+
+  it(`should create, encrypt, store, retrieve and decrypt new wallets for USER ${u1.ID}`, test(u1, wallet1))
+  it(`should create, encrypt, store, retrieve and decrypt new wallets for USER ${u2.ID}`, test(u2, wallet1))
+  it(`should create, encrypt, store, retrieve and decrypt new wallets for USER ${u3.ID}`, test(u3, wallet1))
 })
