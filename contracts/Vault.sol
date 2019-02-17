@@ -21,7 +21,7 @@ contract Vault is Ownable {
     view
     onlyOwner
     returns (
-        string memory alias,
+        string memory _alias,
         string memory mnemonic,
         string memory privateKey
     ) {
@@ -45,6 +45,7 @@ contract Vault is Ownable {
         walletsByUserID[UID][_wallet]._alias = _alias;
         walletsByUserID[UID][_wallet].mnemonic = _mnemonic;
         walletsByUserID[UID][_wallet].privateKey = _privateKey;
+        walletAddressesByUserID[UID].push(_wallet);
         return true;
     }
 
