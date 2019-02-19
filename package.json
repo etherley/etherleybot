@@ -24,12 +24,16 @@
     "web3": "^1.0.0-beta.41"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/express": "^4.16.1",
+    "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
+    "chai": "^4.2.0",
     "codelyzer": "^4.5.0",
     "nodemon": "^1.18.10",
     "openzeppelin-solidity": "^2.1.2",
     "ts-node": "^8.0.2",
+    "tsconfig-paths": "^3.8.0",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1"
   },
@@ -38,7 +42,7 @@
     "@update": "dist/update",
     "@eth": "dist/eth",
     "@contract": "dist/contract",
-    "@abi": "dist/abi",
+    "@abi": "dist/build/contracts",
     "@command": "dist/command",
     "@lib": "dist/lib",
     "@test": "dist/test"

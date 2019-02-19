@@ -10,7 +10,9 @@
     "resolveJsonModule": true,
     "types": [
       "node",
-      "express"
+      "express",
+      "mocha",
+      "chai"
     ],
     "typeRoots": [
       "node_modules/@types"
@@ -23,7 +25,7 @@
         "src/eth/*"
       ],
       "@abi/*": [
-        "src/abi/*"
+        "build/contracts/*"
       ],
       "@command/*": [
         "src/command/*"
@@ -45,6 +47,6 @@
   "exclude": [
     "node_modules/*",
     "build/*",
-    "dist/"
+    "dist/*"
   ]
 }

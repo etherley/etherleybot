@@ -7,6 +7,7 @@ import { StartCommand } from '@command/start.command';
 import { HelpCommand } from '@command/help.command';
 import { PreCheckoutQuery } from '@update/pre-checkout-query.update';
 import { SuccesfulPaymentQuery } from '@update/successful-payment-query.update';
+import WalletCommand from '@command/WalletCommand';
 
 export default class EtherleyBot {
 
@@ -57,7 +58,7 @@ export default class EtherleyBot {
     this.bot.help((ctx: ContextMessageUpdate) => { (new HelpCommand(ctx).reply()) })
     this.bot.command(['ens', 'ENS', 'Ens'], (ctx: ContextMessageUpdate) => { (new ENSCommand(ctx)).reply() })
     this.bot.command(['new', 'NEW', 'New'], (ctx: ContextMessageUpdate) => { (new NewCommand(ctx)).reply() })
-    this.bot.command(['wallet', 'WALLET', 'Wallet'], (ctx: ContextMessageUpdate) => { (new NewCommand(ctx)).reply() })
+    this.bot.command(['wallet', 'WALLET', 'Wallet'], (ctx: ContextMessageUpdate) => { (new WalletCommand(ctx)).reply() })
     this.bot.command(['deposit', 'DEPOSIT', 'Deposit'], (ctx: ContextMessageUpdate) => { (new DepositCommand(ctx)).reply() })
     return this
   }
