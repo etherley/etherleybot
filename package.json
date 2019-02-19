@@ -39,12 +39,12 @@
   },
   "_moduleAliases": {
     "@root": ".",
-    "@update": "dist/update",
-    "@eth": "dist/eth",
-    "@contract": "dist/contract",
+    "@update": "dist/src/update",
+    "@eth": "dist/src/eth",
+    "@contract": "dist/src/contract",
     "@abi": "dist/build/contracts",
-    "@command": "dist/command",
-    "@lib": "dist/lib",
+    "@command": "dist/src/command",
+    "@lib": "dist/src/lib",
     "@test": "dist/test"
   },
   "engines": {

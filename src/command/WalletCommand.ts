@@ -1,5 +1,5 @@
 import Wallet from '@eth/wallet.eth';
-import VaultContract from '@contract/VaultContract';
+import VaultContract, { IWalletStruct } from '@contract/VaultContract';
 import { ContextMessageUpdate } from 'telegraf';
 
 export default class WalletCommand {
@@ -10,7 +10,8 @@ export default class WalletCommand {
 
   actions = new RegExp(/^(?<action>new|balance|export|address)\b/, 'gm')
   options = {
-    new: new RegExp(/(?<alias>[\w\-]+)$/, 'gm')
+    new: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
+    balance: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
   }
 
   constructor(ctx) {
@@ -30,7 +31,11 @@ export default class WalletCommand {
         new: {
           fn: this.onNew,
           args: text.match(this.options.new)
-        }
+        },
+        balance: {
+          fn: this.onBalance,
+          args: text.match(this.options.balance)
+        },
       }
 
       console.info(`[${this.name}] [${action}] [${exec[action].args}]`)
@@ -38,6 +43,35 @@ export default class WalletCommand {
         const response = await exec[action].fn(exec[action].args)
         this.ctx.reply(response)
         resolve()
+      } catch (error) {
+        console.error(error)
+        reject(error)
+      }
+    })
+  }
+
+  onBalance = ([alias]): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const vaultContract = new VaultContract()
+        vaultContract.connect()
+
+        const { wallets: addresses } = await vaultContract.getWalletAddressesByUserID(this.ctx.from.id)
+
+        const wallets = await Promise.all(addresses.map(address => {
+          return vaultContract.getWallet(this.ctx.from.id, address)
+        }))
+
+        const [
+          wallet
+        ] = wallets.filter((w: IWalletStruct) => {
+          return w._alias === alias
+        }) as Array<IWalletStruct>
+
+        const wei = await vaultContract.web3.eth.getBalance(wallet._address)
+        const balance = vaultContract.web3.utils.fromWei(wei)
+
+        resolve(`Wallet\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${balance}`)
       } catch (error) {
         console.error(error)
         reject(error)
@@ -75,8 +109,7 @@ export default class WalletCommand {
         const balance = vaultContract.web3.utils.fromWei(wei)
 
         // Respond to the user with:
-        // Your wallet has been created: address: 0x0, alias: alias, balance: 0.0. Check your balance at anytime with /wallet balance {alias}. Deposit funds to your wallet with /deposit {wallet alias} {amount} {currency (optional)}
-        resolve(`Your wallet has been created: address: ${wallet.address.toString()}, alias: ${alias}, balance: ${balance}.\nCheck your balance at anytime with /wallet balance {alias}. Deposit funds to your wallet with /deposit {wallet alias} {amount} {currency (optional)}`)
+        resolve(`Your wallet has been created:\nAddress: ${wallet.address.toString()}\nAlias: ${alias}\nBalance: Ξ${balance}\n\nCheck your balance at anytime with /wallet balance {alias}. Deposit funds to your wallet with /deposit {wallet alias} {amount} {currency (optional)}`)
       } catch (error) {
         console.error(error)
         reject(error)

@@ -4,16 +4,16 @@ import * as VaultInterface from '@abi/Vault.json';
 import { AbiItem } from 'web3-utils/types';
 import { ContractOptions } from 'web3-eth-contract/types';
 
-interface IWalletStruct {
+export interface IWalletStruct {
+  _alias: string,
+  _address: string,
   mnemonic: string,
   privateKey: string,
-  alias: string,
-  address: string,
 }
 
 export default class VaultContract {
 
-  static readonly address = '0x85061fC0270668bb5775d17db585DC20B7Cb74f1'
+  static readonly address = '0x9560c1cD6C7Bb68Dcf131586d10c7Bb08B70ae87'
 
   contract: any
   field: string
@@ -34,6 +34,18 @@ export default class VaultContract {
       } as ContractOptions
     )
     return this
+  }
+
+  getWalletAddressesByUserID(UID): Promise<any> {
+    return this.contract.methods.getWalletAddressesByUserID(UID).call({
+      from: process.env.BOT_ADDRESS
+    })
+  }
+
+  getWallet(UID: number, address: string): Promise<IWalletStruct> {
+    return this.contract.methods.getWallet(UID, address).call({
+      from: process.env.BOT_ADDRESS
+    })
   }
 
   storeWallet(UID: number, address: string, alias: string) {

@@ -21,11 +21,13 @@ contract Vault is Ownable {
     view
     onlyOwner
     returns (
+        address _address,
         string memory _alias,
         string memory mnemonic,
         string memory privateKey
     ) {
         return (
+            _wallet,
             walletsByUserID[UID][_wallet]._alias,
             walletsByUserID[UID][_wallet].mnemonic,
             walletsByUserID[UID][_wallet].privateKey
