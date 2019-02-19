@@ -83,8 +83,25 @@ contract('Vault Contract Test', async ([wallet1, wallet2, wallet3]) => {
     const contract = await Vault.deployed()
     const [
       address1
-    ] = await contract.getWalletsByUserID(_UID)
+    ] = await contract.getWalletAddressesByUserID(_UID)
 
     assert.equal(address1, wallet.address.toString())
+  })
+
+  it('should get a user wallet by alias', async () => {
+    const contract = await Vault.deployed()
+    const addresses = await contract.getWalletAddressesByUserID(_UID)
+
+    const wallets = await Promise.all(addresses.map(_address => {
+      return contract.getWallet(_UID, _address)
+    }))
+
+    const [
+      _wallet
+    ] = wallets.filter(w => {
+      return w._alias === ALIAS
+    })
+
+    assert.equal(_wallet._alias, ALIAS)
   })
 })
