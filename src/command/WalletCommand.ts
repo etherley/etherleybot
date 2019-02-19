@@ -8,7 +8,7 @@ export default class WalletCommand {
 
   ctx: ContextMessageUpdate
 
-  actions = new RegExp(/^(?<action>new|balance|export|address)\b/, 'gm')
+  actions = new RegExp(/^(?<action>new|balance|list|export)\b/, 'gm')
   options = {
     new: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
     balance: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
@@ -26,7 +26,6 @@ export default class WalletCommand {
         action,
       ] = text.match(this.actions)
 
-
       const exec = {
         new: {
           fn: this.onNew,
@@ -36,6 +35,10 @@ export default class WalletCommand {
           fn: this.onBalance,
           args: text.match(this.options.balance)
         },
+        list: {
+          fn: this.onList,
+          args: null
+        },
       }
 
       console.info(`[${this.name}] [${action}] [${exec[action].args}]`)
@@ -43,6 +46,32 @@ export default class WalletCommand {
         const response = await exec[action].fn(exec[action].args)
         this.ctx.reply(response)
         resolve()
+      } catch (error) {
+        console.error(error)
+        reject(error)
+      }
+    })
+  }
+
+  onList = (): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const vaultContract = new VaultContract()
+        vaultContract.connect()
+
+        const { wallets: addresses } = await vaultContract.getWalletAddressesByUserID(this.ctx.from.id)
+
+        const wallets = await Promise.all(addresses.map(address => {
+          return vaultContract.getWallet(this.ctx.from.id, address)
+        }))
+
+        const list = await Promise.all(wallets.map(async (w: IWalletStruct) => {
+          const wei = await vaultContract.web3.eth.getBalance(w._address)
+          const balance = vaultContract.web3.utils.fromWei(wei)
+          return `Alias: ${w._alias}\nAddress: ${w._address}\nBalance: Ξ${balance}\n\n`
+        }))
+
+        resolve(`Your wallets:\n${list.join('')}`)
       } catch (error) {
         console.error(error)
         reject(error)
@@ -82,9 +111,6 @@ export default class WalletCommand {
   onNew = ([alias]): Promise<string> => {
     return new Promise(async (resolve, reject) => {
       try {
-        // TODO
-        // Check that alias does not exist in user Vault. Do we really need to check this?
-
         // Create new randomWallet
         const wallet = new Wallet()
         wallet.generateRandom()
