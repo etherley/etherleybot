@@ -1,6 +1,8 @@
 import Wallet from '@eth/wallet.eth';
 import VaultContract, { IWalletStruct } from '@contract/VaultContract';
 import { ContextMessageUpdate } from 'telegraf';
+import * as fs from 'fs';
+import qrcode from 'qrcode-generator';
 
 export default class WalletCommand {
 
@@ -8,10 +10,11 @@ export default class WalletCommand {
 
   ctx: ContextMessageUpdate
 
-  actions = new RegExp(/^(?<action>new|balance|list|export)\b/, 'gm')
+  actions = new RegExp(/^(?<action>new|balance|list|receive|export)\b/, 'gm')
   options = {
     new: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
     balance: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
+    receive: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
   }
 
   constructor(ctx) {
@@ -39,13 +42,68 @@ export default class WalletCommand {
           fn: this.onList,
           args: null
         },
+        receive: {
+          fn: this.onReceive,
+          args: text.match(this.options.receive)
+        },
       }
+
+      // TODO check for expected options
 
       console.info(`[${this.name}] [${action}] [${exec[action].args}]`)
       try {
         const response = await exec[action].fn(exec[action].args)
         this.ctx.reply(response)
         resolve()
+      } catch (error) {
+        console.error(error)
+        reject(error)
+      }
+    })
+  }
+
+  onReceive = ([alias]): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const vaultContract = new VaultContract()
+        vaultContract.connect()
+
+        const { wallets: addresses } = await vaultContract.getWalletAddressesByUserID(this.ctx.from.id)
+
+        const wallets = await Promise.all(addresses.map(address => {
+          return vaultContract.getWallet(this.ctx.from.id, address)
+        }))
+
+        const [
+          wallet
+        ] = wallets.filter((w: IWalletStruct) => {
+          return w._alias === alias
+        }) as Array<IWalletStruct>
+
+        const qr = qrcode(0, 'H')
+        qr.addData(wallet._address)
+        qr.make()
+        const base64Data = qr.createDataURL(6, 2).replace(/^data:image\/gif;base64,/, '')
+
+        // const path = `/tmp/${wallet._address}.png`
+
+        // fs.writeFile(path, base64Data, 'base64', (error) => {
+        //   reject(error)
+        //   console.error(error)
+        // })
+
+        const file = Buffer.from(base64Data, 'base64')
+
+        this.ctx.replyWithPhoto({ source: file }, { caption: `${wallet._address}` })
+
+        // fs.readFile(path, (error, file) => {
+        //   if (error) {
+        //     console.error(error)
+        //     reject(error)
+        //   }
+        // })
+
+        resolve(`${wallet._address}`)
       } catch (error) {
         console.error(error)
         reject(error)
