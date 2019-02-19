@@ -49,7 +49,7 @@ contract Vault is Ownable {
         return true;
     }
 
-    function getWalletsByUserID(
+    function getWalletAddressesByUserID(
         uint256 UID
     )
     public
