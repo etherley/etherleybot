@@ -1,4 +1,5 @@
 import Cypher from '@lib/cypher.lib';
+import { Contract } from 'web3-eth-contract';
 import Web3Provider from '@eth/web3.eth';
 import * as VaultInterface from '@abi/Vault.json';
 import { AbiItem } from 'web3-utils/types';
@@ -13,10 +14,9 @@ export interface IWalletStruct {
 
 export default class VaultContract {
 
-  static readonly address = '0x9560c1cD6C7Bb68Dcf131586d10c7Bb08B70ae87'
+  static readonly address = '0xc5097df0ab6480c79e20b1fcb3b25d9ba3dcd595'
 
-  contract: any
-  field: string
+  contract: Contract
 
   web3: Web3Provider = new Web3Provider()
 
@@ -26,6 +26,7 @@ export default class VaultContract {
   constructor() { }
 
   connect() {
+    console.info(`[VaultContract] connecting to contract ABI at ${VaultContract.address} with network ${this.web3.network}`)
     this.contract = new this.web3.eth.Contract(
       VaultInterface.abi as AbiItem[],
       VaultContract.address,
@@ -49,6 +50,7 @@ export default class VaultContract {
   }
 
   storeWallet(UID: number, address: string, alias: string) {
+    console.info(`[VaultContract] attempting to store encrypted wallet in Vault.sol contract instance. ${UID}, ${address}, ${alias}`)
     return new Promise(async (resolve, reject) => {
       try {
         const txObject = await this.contract.methods.storeWallet(
@@ -58,7 +60,9 @@ export default class VaultContract {
           this.encrypted.mnemonic,
           this.encrypted.privateKey,
         )
-        const gas = await txObject.estimateGas()
+        const gas = await txObject.estimateGas({
+          from: process.env.BOT_ADDRESS,
+        })
         const txOptions = {
           from: process.env.BOT_ADDRESS,
           to: this.contract.options.address,
@@ -82,9 +86,9 @@ export default class VaultContract {
 
   encrypt(data: Buffer, field: keyof IWalletStruct): Promise<void> {
     const cypher = new Cypher()
+    console.info(`[VaultContract] encrypting ${field}`)
     return new Promise((resolve, reject) => {
       cypher.encrypt(data).then(encrypted => {
-        // this.wallet[field] = this.web3.utils.toHex(encrypted.toString('hex'))
         this.encrypted[field] = encrypted.toString('hex')
         resolve()
       }).catch(error => {
@@ -96,6 +100,7 @@ export default class VaultContract {
 
   decrypt(data: Buffer, field: keyof IWalletStruct): Promise<void> {
     const cypher = new Cypher()
+    console.info(`[VaultContract] decrypting ${field}`)
     return new Promise((resolve, reject) => {
       cypher.decrypt(data).then(decrypted => {
         this.decrypted[field] = decrypted.toString('utf8')

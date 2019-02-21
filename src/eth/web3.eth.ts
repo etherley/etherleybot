@@ -12,8 +12,10 @@ export default class Web3Provider {
   utils: Utils
   eth: Eth
   instance: Web3
+  network: string
 
   constructor(network: string = process.env.ETHEREUM_NETWORK) {
+    this.network = network
     const provider = new Web3.providers.HttpProvider(network)
     this.instance = new Web3(provider, null, {
       defaultGasPrice: '21000',

@@ -1,7 +1,6 @@
 import Wallet from '@eth/wallet.eth';
 import VaultContract, { IWalletStruct } from '@contract/VaultContract';
 import { ContextMessageUpdate } from 'telegraf';
-import * as fs from 'fs';
 import qrcode from 'qrcode-generator';
 
 export default class WalletCommand {
@@ -10,7 +9,7 @@ export default class WalletCommand {
 
   ctx: ContextMessageUpdate
 
-  actions = new RegExp(/^(?<action>new|balance|list|receive|export)\b/, 'gm')
+  actions = new RegExp(/(?<action>new|balance|list|receive|export)\b/, 'gm')
   options = {
     new: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
     balance: new RegExp(/(?<alias>[\w\-]+)$/, 'gm'),
@@ -53,7 +52,9 @@ export default class WalletCommand {
       console.info(`[${this.name}] [${action}] [${exec[action].args}]`)
       try {
         const response = await exec[action].fn(exec[action].args)
-        this.ctx.reply(response)
+        if (response) {
+          this.ctx.reply(response)
+        }
         resolve()
       } catch (error) {
         console.error(error)
@@ -85,25 +86,10 @@ export default class WalletCommand {
         qr.make()
         const base64Data = qr.createDataURL(6, 2).replace(/^data:image\/gif;base64,/, '')
 
-        // const path = `/tmp/${wallet._address}.png`
-
-        // fs.writeFile(path, base64Data, 'base64', (error) => {
-        //   reject(error)
-        //   console.error(error)
-        // })
-
         const file = Buffer.from(base64Data, 'base64')
-
         this.ctx.replyWithPhoto({ source: file }, { caption: `${wallet._address}` })
 
-        // fs.readFile(path, (error, file) => {
-        //   if (error) {
-        //     console.error(error)
-        //     reject(error)
-        //   }
-        // })
-
-        resolve(`${wallet._address}`)
+        resolve()
       } catch (error) {
         console.error(error)
         reject(error)
@@ -129,7 +115,7 @@ export default class WalletCommand {
           return `Alias: ${w._alias}\nAddress: ${w._address}\nBalance: Ξ${balance}\n\n`
         }))
 
-        resolve(`Your wallets:\n${list.join('')}`)
+        resolve(`Your wallets:\n\n${list.join('')}`)
       } catch (error) {
         console.error(error)
         reject(error)

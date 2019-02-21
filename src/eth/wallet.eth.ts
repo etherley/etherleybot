@@ -4,9 +4,12 @@ export default class Wallet {
 
   instance: ethers.Wallet
 
-  constructor() { }
+  constructor() {
+    console.info(`[Wallet] instantiating wallet class`)
+  }
 
   generateRandom() {
+    console.info(`[Wallet] Generating random wallet`)
     this.instance = ethers.Wallet.createRandom()
     return this
   }
