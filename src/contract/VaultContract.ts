@@ -23,8 +23,6 @@ export default class VaultContract {
   encrypted = <IWalletStruct>{}
   decrypted = <IWalletStruct>{}
 
-  onTxHash: Promise<string>
-
   constructor() { }
 
   connect() {
@@ -94,12 +92,10 @@ export default class VaultContract {
           from: from,
           to: to,
           value: value,
+          gas: '21000',
         }
         const signedTx = await this.web3.eth.accounts.signTransaction(txOptions, this.decrypted.privateKey)
         const tx = this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-        tx.on('transactionHash', hash => {
-          this.onTxHash = Promise.resolve().then(() => hash)
-        })
         tx.on('error', error => {
           reject(error)
         })

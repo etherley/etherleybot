@@ -2,10 +2,12 @@ require('dotenv').config()
 
 import WalletCommand from '@command/WalletCommand';
 import TelegramContextMock from '@test/mock/TelegramContextMock';
+import VaultContract, { IWalletStruct } from '@contract/VaultContract';
 import { assert } from 'chai';
 
-const UID = 639642125
+const UID = 639642129
 const ALIAS = 'my-wallet-alias.eth'
+const TO = '0xF0653c636027f5D9F8325053D8c22eaB74080257'
 
 describe('WalletCommandTest', () => {
   it('creates a new wallet for Telegram UID', async () => {
@@ -17,7 +19,6 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
     }
     console.log(ctx.message.text)
   })
@@ -31,10 +32,61 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
       assert.instanceOf(error, Error)
     }
     console.log(ctx.message.text)
+  })
+
+  it('FAILS when SENDING ETH to an address from wallet with LESS BALANCE than VALUE for Telegram UID', async () => {
+    const ctx = new TelegramContextMock()
+    ctx.update.message.text = `/wallet ${ALIAS}  send (123.555) to ${TO}`
+    ctx.from.id = UID
+
+    const walletCommand = new WalletCommand(ctx)
+    try {
+      await walletCommand.reply()
+    } catch (error) {
+      assert.instanceOf(error, Error)
+    }
+    console.log(ctx.message.text)
+  })
+
+  it('SENDS value to another address for Telegram UID', async () => {
+    try {
+      const ctx = new TelegramContextMock()
+      ctx.update.message.text = `/wallet ${ALIAS}  send (3.5) to ${TO}`
+      ctx.from.id = UID
+
+      const walletCommand = new WalletCommand(ctx)
+      const vaultContract = new VaultContract()
+      vaultContract.connect()
+
+      const { wallets: addresses } = await vaultContract.getWalletAddressesByUserID(ctx.from.id)
+
+      const wallets = await Promise.all(addresses.map(address => {
+        return vaultContract.getWallet(ctx.from.id, address)
+      }))
+
+      const [
+        wallet
+      ] = wallets.filter((w: IWalletStruct) => {
+        return w._alias === ALIAS
+      }) as Array<IWalletStruct>
+
+      const value = vaultContract.web3.utils.toWei('5', 'ether')
+
+      const txOptions = {
+        from: process.env.BOT_ADDRESS,
+        to: wallet._address,
+        value: value,
+        gas: '21000',
+      }
+      const signedTx = await vaultContract.web3.eth.accounts.signTransaction(txOptions, process.env.BOT_PRIVATE_KEY)
+      const receipt = await vaultContract.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+      await walletCommand.reply()
+      console.log(ctx.message.text)
+    } catch (error) {
+    }
   })
 
   it('REJECTS a NEW WALLET creation for Telegram UID', async () => {
@@ -46,7 +98,6 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
       assert.instanceOf(error, Error)
     }
     console.log(ctx.message.text)
@@ -72,7 +123,6 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
       assert.instanceOf(error, Error)
     }
     console.log(ctx.message.text)
@@ -87,7 +137,6 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
     }
     console.log(ctx.message.text)
   })
@@ -101,7 +150,6 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
       assert.instanceOf(error, Error)
     }
     console.log(ctx.message.text)
@@ -116,7 +164,6 @@ describe('WalletCommandTest', () => {
     try {
       await walletCommand.reply()
     } catch (error) {
-      console.error(error)
       assert.instanceOf(error, Error)
     }
     console.log(ctx.message.text)

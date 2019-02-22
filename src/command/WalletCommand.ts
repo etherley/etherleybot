@@ -2,7 +2,8 @@ import Wallet from '@eth/wallet.eth';
 import VaultContract, { IWalletStruct } from '@contract/VaultContract';
 import { ContextMessageUpdate } from 'telegraf';
 import qrcode from 'qrcode-generator';
-import BigNumber from 'bn.js';
+import BigNumber from 'bignumber.js';
+import { BN } from 'web3-utils/types';
 
 export default class WalletCommand {
 
@@ -151,7 +152,7 @@ export default class WalletCommand {
   onSend = ({ alias, value, address: to }): Promise<string> => {
     return new Promise(async (resolve, reject) => {
       try {
-        const _value = value.replace(/\(|\)/gm, '')
+        const _value: BigNumber = new BigNumber(value.replace(/\(|\)/gm, ''))
 
         const vaultContract = new VaultContract()
         vaultContract.connect()
@@ -173,11 +174,12 @@ export default class WalletCommand {
           throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
         }
 
-        const wei = await vaultContract.web3.eth.getBalance(wallet._address)
+        let wei = await vaultContract.web3.eth.getBalance(wallet._address)
         const balance = vaultContract.web3.utils.fromWei(wei)
 
-        if (BigNumber(wei).lte(BigNumber(_value))) {
-          this.ctx.reply(`Insufficient balance for wallet:\n\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${balance}`)
+        const amount = vaultContract.web3.utils.toWei(_value.toString(), 'ether')
+        if (new BigNumber(wei).lte(amount)) {
+          this.ctx.reply(`Insufficient balance for wallet:\n\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${balance}\nValue: Ξ${_value.toString()}`)
           throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
         }
 
@@ -185,12 +187,12 @@ export default class WalletCommand {
           vaultContract.decrypt(Buffer.from(wallet.privateKey, 'hex'), 'privateKey'),
         ])
 
-        vaultContract.onTxHash.then(hash => console.log(hash))
+        const receipt: any = await vaultContract.send(wallet._address, to, vaultContract.web3.utils.toWei(_value.toString(), 'ether'))
 
-        const receipt = await vaultContract.send(wallet._address, to, vaultContract.web3.utils.fromWei(_value, 'ether'))
-        console.log(receipt)
+        wei = await vaultContract.web3.eth.getBalance(wallet._address)
+        const newBalance = vaultContract.web3.utils.fromWei(wei)
 
-        this.ctx.reply(`Wallet\n\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${balance}`)
+        this.ctx.reply(`You've sent Ξ${_value} to ${to}.\nTransaction: <a href="https://ropsten.etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>\n\nWallet\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${newBalance}`)
         resolve()
       } catch (error) {
         console.error(error)

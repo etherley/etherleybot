@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bignumber.js": "^8.0.2",
     "dotenv": "^6.2.0",
     "eth-ens-namehash": "^2.0.8",
     "ethers": "^4.0.23",
