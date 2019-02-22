@@ -3,7 +3,6 @@ import VaultContract, { IWalletStruct } from '@contract/VaultContract';
 import { ContextMessageUpdate } from 'telegraf';
 import qrcode from 'qrcode-generator';
 import BigNumber from 'bignumber.js';
-import { BN } from 'web3-utils/types';
 
 export default class WalletCommand {
 
@@ -11,7 +10,7 @@ export default class WalletCommand {
 
   ctx: ContextMessageUpdate
 
-  actions = new RegExp(/(?<action>new|balance|list|receive|send|export).*/, 'gm')
+  actions = new RegExp(/(?<action>new|balance|list|receive|qrcode|send|export).*/, 'gm')
   options = {
     new: new RegExp(/(?<alias>[\w\-]+\.eth)$/, 'gm'),
     balance: new RegExp(/(?<alias>[\w\-]+\.eth)/, 'gm'),
@@ -28,6 +27,12 @@ export default class WalletCommand {
       const text: string = this.ctx.update.message.text
 
       const match = this.actions.exec(text)
+
+      if (!match) {
+        this.onNoAction()
+        throw new Error(`[WalletCommand] No action for [${text}]`)
+      }
+
       const {
         action,
       } = match['groups']
@@ -49,6 +54,10 @@ export default class WalletCommand {
           fn: this.onReceive,
           args: this.options.receive
         },
+        qrcode: {
+          fn: this.onReceive,
+          args: this.options.receive
+        },
         send: {
           fn: this.onSend,
           args: this.options.send
@@ -56,7 +65,7 @@ export default class WalletCommand {
       }
 
       if (!exec[action]) {
-        this.ctx.reply(`There is no action for your command. Please ensure that:\n\n- Your wallet alias ends with ".eth". eg. my-wallet-alias.eth\n- You are using one of these actions: /wallet new|balance|list|receive|send|export.\n\n Type "/wallet help" for more.`)
+        this.onNoAction()
         throw new Error(`[WalletCommand] No action for [${text}]`)
       }
 
@@ -68,6 +77,11 @@ export default class WalletCommand {
         }
 
         const args = exec[action].args.exec(text)
+        if (!args) {
+          this.onNoAction()
+          throw new Error(`[WalletCommand] Wrong options for [${action}], [${text}]`)
+        }
+
         if (args['groups']) {
           console.info(`[WalletCommand] [${this.name}] [${action}] [${args[0]}]`)
           await exec[action].fn(args['groups'])
@@ -79,7 +93,12 @@ export default class WalletCommand {
     })
   }
 
+  onNoAction() {
+    this.ctx.reply(`There is no action for your command. Use one of the following:\n\n/wallet new {alias}.eth\n/wallet list\n/wallet {alias}.eth balance\n/wallet {alias}.eth qrcode\n/wallet {alias}.eth send ({value in ETH}) to {address}`)
+  }
+
   onReceive = ({ alias }): Promise<string> => {
+    this.ctx.reply(`Sure, I'll generate a QR Code for your ${alias} wallet.\nWait a moment.`)
     return new Promise(async (resolve, reject) => {
       try {
         const vaultContract = new VaultContract()
@@ -118,6 +137,7 @@ export default class WalletCommand {
   }
 
   onList = (): Promise<string> => {
+    this.ctx.reply(`Sure, I'm fetching your wallets.\nWait a moment.`)
     return new Promise(async (resolve, reject) => {
       try {
         const vaultContract = new VaultContract()
@@ -153,6 +173,8 @@ export default class WalletCommand {
     return new Promise(async (resolve, reject) => {
       try {
         const _value: BigNumber = new BigNumber(value.replace(/\(|\)/gm, ''))
+
+        this.ctx.reply(`Sure, I will attempt to send Ξ${_value.toString()} to ${to} from your ${alias} wallet\n Wait a moment.`)
 
         const vaultContract = new VaultContract()
         vaultContract.connect()
@@ -192,7 +214,7 @@ export default class WalletCommand {
         wei = await vaultContract.web3.eth.getBalance(wallet._address)
         const newBalance = vaultContract.web3.utils.fromWei(wei)
 
-        this.ctx.reply(`You've sent Ξ${_value} to ${to}.\nTransaction: <a href="https://ropsten.etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>\n\nWallet\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${newBalance}`)
+        this.ctx.reply(`You've sent Ξ${_value} to ${to}.\nTransaction: https://ropsten.etherscan.io/tx/${receipt.transactionHash}\n\nWallet\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${newBalance}`)
         resolve()
       } catch (error) {
         console.error(error)
@@ -202,6 +224,7 @@ export default class WalletCommand {
   }
 
   onBalance = ({ alias }): Promise<string> => {
+    this.ctx.reply(`Sure, I will get the balance of your ${alias} wallet.\nWait a moment.`)
     return new Promise(async (resolve, reject) => {
       try {
         const vaultContract = new VaultContract()
@@ -237,6 +260,7 @@ export default class WalletCommand {
   }
 
   onNew = ({ alias }): Promise<string> => {
+    this.ctx.reply(`Sure, I will create a new wallet for you with this alias: ${alias}.\nThis may take a few seconds.`)
     return new Promise(async (resolve, reject) => {
       try {
         const vaultContract = new VaultContract()
@@ -257,7 +281,7 @@ export default class WalletCommand {
         if (_wallet) {
           const _wei = await vaultContract.web3.eth.getBalance(_wallet._address.toString())
           const _balance = vaultContract.web3.utils.fromWei(_wei)
-          this.ctx.reply(`You already have a wallet with that alias:\n\nAlias: ${_wallet._alias}\nAddress: ${_wallet._address}\nBalance: Ξ${_balance}`)
+          this.ctx.reply(`You already have a wallet with this alias:\n\nAlias: ${_wallet._alias}\nAddress: ${_wallet._address}\nBalance: Ξ${_balance}`)
           throw new Error(`[WalletCommand] a wallet with specified alias [${alias}] for user [${this.ctx.from.id}] already exists.`)
         }
 
@@ -282,7 +306,7 @@ export default class WalletCommand {
         const balance = vaultContract.web3.utils.fromWei(wei)
 
         // Respond to the user with:
-        this.ctx.reply(`Your wallet has been created:\n\nAddress: ${wallet.address.toString()}\nAlias: ${alias}\nBalance: Ξ${balance}\n\nCheck your balance at anytime with "/wallet balance {alias}.eth". Deposit funds to your wallet with "/deposit ({amount}) {currency} in {wallet-alias}.eth"`)
+        this.ctx.reply(`Your wallet has been created:\n\nAddress: ${wallet.address.toString()}\nAlias: ${alias}\nBalance: Ξ${balance}\n\nCheck your balance at anytime with "/wallet {alias}.eth balance". Deposit funds to your wallet with "/deposit ({amount}) {currency} in {wallet-alias}.eth"`)
         resolve()
       } catch (error) {
         console.error(error)
