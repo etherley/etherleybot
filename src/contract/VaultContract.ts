@@ -14,7 +14,7 @@ export interface IWalletStruct {
 
 export default class VaultContract {
 
-  static readonly address = '0xc5097df0ab6480c79e20b1fcb3b25d9ba3dcd595'
+  static readonly address = process.env.VAULT_CONTRACT_ADDRESS
 
   contract: Contract
 
@@ -22,6 +22,8 @@ export default class VaultContract {
 
   encrypted = <IWalletStruct>{}
   decrypted = <IWalletStruct>{}
+
+  onTxHash: Promise<string>
 
   constructor() { }
 
@@ -72,6 +74,32 @@ export default class VaultContract {
         }
         const signedTx = await this.web3.eth.accounts.signTransaction(txOptions, process.env.BOT_PRIVATE_KEY)
         const tx = this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+        tx.on('error', error => {
+          reject(error)
+        })
+        tx.on('receipt', receipt => {
+          resolve(receipt)
+        })
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  send(from: string, to: string, value: string) {
+    console.info(`[VaultContract] attempting to send ${value} from ${from} to ${to} wallet.`)
+    return new Promise(async (resolve, reject) => {
+      try {
+        const txOptions = {
+          from: from,
+          to: to,
+          value: value,
+        }
+        const signedTx = await this.web3.eth.accounts.signTransaction(txOptions, this.decrypted.privateKey)
+        const tx = this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+        tx.on('transactionHash', hash => {
+          this.onTxHash = Promise.resolve().then(() => hash)
+        })
         tx.on('error', error => {
           reject(error)
         })
