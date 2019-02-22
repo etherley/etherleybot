@@ -30,7 +30,8 @@ export default class WalletCommand {
 
       if (!match) {
         this._onNoAction()
-        throw new Error(`[WalletCommand] No action for [${text}]`)
+        reject(new Error(`[WalletCommand] No action for [${text}]`))
+        return
       }
 
       const {
@@ -66,7 +67,8 @@ export default class WalletCommand {
 
       if (!exec[action]) {
         this._onNoAction()
-        throw new Error(`[WalletCommand] No action for [${text}]`)
+        reject(new Error(`[WalletCommand] No action for [${text}]`))
+        return
       }
 
       try {
@@ -79,7 +81,8 @@ export default class WalletCommand {
         const args = exec[action].args.exec(text)
         if (!args) {
           this._onNoAction()
-          throw new Error(`[WalletCommand] Wrong options for [${action}], [${text}]`)
+          reject(new Error(`[WalletCommand] Wrong options for [${action}], [${text}]`))
+          return
         }
 
         if (args['groups']) {
@@ -94,7 +97,7 @@ export default class WalletCommand {
   }
 
   private _onNoAction() {
-    this.ctx.reply(`There is no action for your command. Use one of the following:\n\n/wallet new { alias }.eth\n/wallet list\n/wallet { alias }.eth balance\n/wallet { alias }.eth qrcode\n/wallet { alias }.eth send [ { value in ETH } ] to {address}.\n\nNOTE: When sending ETH, make sure that the value is enclosed with [] brackets.\n\neg. "/wallet my-wallet-alias.eth send [0.5] to 0x24b2e8C86Cc5a378b184b64728dB1A8484D844eC"`)
+    this.ctx.reply(`There is no action for your command. Use one of the following:\n\n/wallet new {alias}.eth\n/wallet list\n/wallet {alias}.eth balance\n/wallet {alias}.eth qrcode\n/wallet {alias}.eth send [ {value in ETH} ] to {address}.\n\nNOTE: When sending ETH, make sure that the value is enclosed with [] brackets.\n\neg. "/wallet my-wallet-alias.eth send [0.5] to 0x24b2e8C86Cc5a378b184b64728dB1A8484D844eC"`)
   }
 
   onReceive = ({ alias }): Promise<string> => {
@@ -118,7 +121,8 @@ export default class WalletCommand {
 
         if (!wallet) {
           this.ctx.reply(`There is no wallet with this alias: ${alias}.\n\nUse "/wallet list" to see your wallets.`)
-          throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
+          reject(new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`))
+          return
         }
 
         const qr = qrcode(0, 'H')
@@ -130,7 +134,6 @@ export default class WalletCommand {
         this.ctx.replyWithPhoto({ source: file }, { caption: `${wallet._address}` })
         resolve()
       } catch (error) {
-        console.error(error)
         reject(error)
       }
     })
@@ -147,7 +150,8 @@ export default class WalletCommand {
 
         if (!addresses.length) {
           this.ctx.reply(`You have no wallets yet. Create a wallet by typing "/wallet new {your-wallet-alias}.eth"`)
-          throw new Error(`[WalletCommand] no wallets for user [${this.ctx.from.id}]`)
+          reject(new Error(`[WalletCommand] no wallets for user [${this.ctx.from.id}]`))
+          return
         }
 
         const wallets = await Promise.all(addresses.map(address => {
@@ -163,7 +167,6 @@ export default class WalletCommand {
         this.ctx.reply(`Your wallets:\n\n${list.join('')}`)
         resolve()
       } catch (error) {
-        console.error(error)
         reject(error)
       }
     })
@@ -193,7 +196,8 @@ export default class WalletCommand {
 
         if (!wallet) {
           this.ctx.reply(`There is no wallet with this alias: ${alias}.\n\nUse "/wallet list" to see your wallets.`)
-          throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
+          reject(new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`))
+          return
         }
 
         let wei = await vaultContract.web3.eth.getBalance(wallet._address)
@@ -202,7 +206,8 @@ export default class WalletCommand {
         const amount = vaultContract.web3.utils.toWei(_value.toString(), 'ether')
         if (new BigNumber(wei).lte(amount)) {
           this.ctx.reply(`Insufficient balance for wallet:\n\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${balance}\nValue: Ξ${_value.toString()}`)
-          throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
+          reject(new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`))
+          return
         }
 
         await Promise.all([
@@ -217,7 +222,6 @@ export default class WalletCommand {
         this.ctx.reply(`You've sent Ξ${_value} to ${to}.\nTransaction: https://ropsten.etherscan.io/tx/${receipt.transactionHash}\n\nWallet\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${newBalance}`)
         resolve()
       } catch (error) {
-        console.error(error)
         reject(error)
       }
     })
@@ -244,7 +248,8 @@ export default class WalletCommand {
 
         if (!wallet) {
           this.ctx.reply(`There is no wallet with this alias: ${alias}.\n\nUse "/wallet list" to see your wallets.`)
-          throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
+          reject(new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`))
+          return
         }
 
         const wei = await vaultContract.web3.eth.getBalance(wallet._address)
@@ -253,7 +258,6 @@ export default class WalletCommand {
         this.ctx.reply(`Wallet\n\nAlias: ${wallet._alias}\nAddress: ${wallet._address}\nBalance: Ξ${balance}`)
         resolve()
       } catch (error) {
-        console.error(error)
         reject(error)
       }
     })
@@ -282,12 +286,14 @@ export default class WalletCommand {
           const _wei = await vaultContract.web3.eth.getBalance(_wallet._address.toString())
           const _balance = vaultContract.web3.utils.fromWei(_wei)
           this.ctx.reply(`You already have a wallet with this alias:\n\nAlias: ${_wallet._alias}\nAddress: ${_wallet._address}\nBalance: Ξ${_balance}`)
-          throw new Error(`[WalletCommand] a wallet with specified alias [${alias}] for user [${this.ctx.from.id}] already exists.`)
+          reject(new Error(`[WalletCommand] a wallet with specified alias [${alias}] for user [${this.ctx.from.id}] already exists.`))
+          return
         }
 
         // Create new randomWallet
         const wallet = new Wallet()
         wallet.generateRandom()
+
         // Encrypt new wallet mnemonic and privateKey
         await Promise.all([
           vaultContract.encrypt(wallet.mnemonic, 'mnemonic'),
@@ -306,10 +312,9 @@ export default class WalletCommand {
         const balance = vaultContract.web3.utils.fromWei(wei)
 
         // Respond to the user with:
-        this.ctx.reply(`Your wallet has been created:\n\nAddress: ${wallet.address.toString()}\nAlias: ${alias}\nBalance: Ξ${balance}\n\nCheck your balance at anytime with "/wallet {alias}.eth balance". Deposit funds to your wallet with "/deposit ({amount}) {currency} in {wallet-alias}.eth"`)
+        this.ctx.reply(`Your wallet has been created:\n\nAddress: ${wallet.address.toString()}\nAlias: ${alias}\nBalance: Ξ${balance}\n\nCheck your balance at anytime with "/wallet {alias}.eth balance". Deposit funds to your wallet with "/wallet {alias}.eth deposit [ {amount} ] {currency}"`)
         resolve()
       } catch (error) {
-        console.error(error)
         reject(error)
       }
     })

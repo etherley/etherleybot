@@ -1,23 +1,29 @@
-import * as ENSResolver from '@abi/PublicResolver.json';
+import * as ENSResolverInterface from '@abi/PublicResolver.json';
+import { Contract } from 'web3-eth-contract';
+import Web3Provider from '@eth/web3.eth';
+import { ContractOptions } from 'web3-eth-contract/types';
+import { AbiItem } from 'web3-utils/types';
+import { Address } from '@eth/address.eth';
 
-export class ENSResolverContract {
+export default class ENSResolverContract {
 
-    bytecode = ENSResolver.bytecode
-    address: string
-    web3: any
-    instance: any
+  static readonly address = '0x314159265dD8dbb310642f98f50C066173C1259b'
 
-    constructor(web3: any) {
-        this.web3 = web3
-    }
+  address: string
+  web3: Web3Provider = new Web3Provider()
+  contract: Contract
 
-    connect(address: string) {
-        const contract = new this.web3.eth.Contract(ENSResolver.abi,
-            address,
-            {
-                data: ENSResolver.bytecode,
-            })
-        this.instance = contract
-        return this
-    }
+  constructor() { }
+
+  connect(address: Address) {
+    console.info(`[ENSResolverContract] connecting to contract ABI at ${ENSResolverContract.address} with network ${this.web3.network}`)
+    this.contract = new this.web3.eth.Contract(
+      ENSResolverInterface.abi as AbiItem[],
+      address.toChecksumAddress(),
+      {
+        data: ENSResolverInterface.bytecode,
+      } as ContractOptions
+    )
+    return this
+  }
 }

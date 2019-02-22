@@ -1,6 +1,6 @@
 import Telegraf, { ContextMessageUpdate } from 'telegraf';
 import { InlineQuery } from '@update/inline-query.update';
-import { ENSCommand } from '@command/ens.command';
+import { ENSCommand } from '@command/ENSCommand';
 import { NewCommand } from '@command/new.command';
 import { DepositCommand } from '@command/deposit.command';
 import { StartCommand } from '@command/StartCommand';

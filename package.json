@@ -31,6 +31,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
     "chai": "^4.2.0",
+    "chalk": "^2.4.2",
     "codelyzer": "^4.5.0",
     "nodemon": "^1.18.10",
     "openzeppelin-solidity": "^2.1.2",

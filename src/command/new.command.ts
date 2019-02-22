@@ -1,4 +1,4 @@
-import { ENSProvider } from '@eth/ens.eth';
+import { ENSProvider } from '@eth/ENSProvider';
 import jsonfile from 'jsonfile';
 import * as fs from 'fs';
 

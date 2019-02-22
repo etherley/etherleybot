@@ -20,6 +20,8 @@ import {
   ExtraPhoto
 } from 'telegraf/typings/telegram-types';
 
+const chalk = require('chalk')
+
 export class Chat implements Partial<TelegramChat> {
   id = 234
   type = 'private'
@@ -65,6 +67,7 @@ export default class TelegramContextMock implements Partial<ContextMessageUpdate
   messagePhoto: MessagePhoto
 
   reply(text: string, extra?: ExtraReplyMessage): Promise<Message> {
+    console.info(chalk.bold.bgYellow(text))
     return new Promise((resolve, reject) => {
       this.message = new Message()
       this.message.text = text

@@ -1,5 +1,5 @@
 import { Address } from '@eth/address.eth';
-import { ENSProvider } from '@eth/ens.eth';
+import { ENSProvider } from '@eth/ENSProvider';
 import { ContextMessageUpdate } from 'telegraf';
 
 export class InlineQuery {

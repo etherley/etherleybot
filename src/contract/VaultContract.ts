@@ -116,7 +116,6 @@ export default class VaultContract {
         this.encrypted[field] = encrypted.toString('hex')
         resolve()
       }).catch(error => {
-        console.error(error)
         reject(error)
       })
     })
@@ -130,7 +129,6 @@ export default class VaultContract {
         this.decrypted[field] = decrypted.toString('utf8')
         resolve()
       }).catch(error => {
-        console.error(error)
         reject(error)
       })
     })
