@@ -25,7 +25,7 @@ describe('WalletCommandTest', () => {
 
   it('FAILS when SENDING ETH to an address from wallet with WRONG ALIAS for Telegram UID', async () => {
     const ctx = new TelegramContextMock()
-    ctx.update.message.text = '/wallet my-wallet_aliasss.eth  send (123.555) to 0x3303A197394e6fA6064f13775a6F09a03d4d178D  '
+    ctx.update.message.text = '/wallet my-wallet_aliasss.eth  send [123.555] to 0x3303A197394e6fA6064f13775a6F09a03d4d178D  '
     ctx.from.id = UID
 
     const walletCommand = new WalletCommand(ctx)
@@ -39,7 +39,7 @@ describe('WalletCommandTest', () => {
 
   it('FAILS when SENDING ETH to an address from wallet with LESS BALANCE than VALUE for Telegram UID', async () => {
     const ctx = new TelegramContextMock()
-    ctx.update.message.text = `/wallet ${ALIAS}  send (123.555) to ${TO}`
+    ctx.update.message.text = `/wallet ${ALIAS}  send [123.555] to ${TO}`
     ctx.from.id = UID
 
     const walletCommand = new WalletCommand(ctx)
@@ -54,7 +54,7 @@ describe('WalletCommandTest', () => {
   it('SENDS value to another address for Telegram UID', async () => {
     try {
       const ctx = new TelegramContextMock()
-      ctx.update.message.text = `/wallet ${ALIAS}  send (3.5) to ${TO}`
+      ctx.update.message.text = `/wallet ${ALIAS}  send [3.5] to ${TO}`
       ctx.from.id = UID
 
       const walletCommand = new WalletCommand(ctx)

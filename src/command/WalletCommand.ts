@@ -15,7 +15,7 @@ export default class WalletCommand {
     new: new RegExp(/(?<alias>[\w\-]+\.eth)$/, 'gm'),
     balance: new RegExp(/(?<alias>[\w\-]+\.eth)/, 'gm'),
     receive: new RegExp(/(?<alias>[\w\-]+\.eth)/, 'gm'),
-    send: new RegExp(/(?<alias>[\w\-]+\.eth).*(?<value>\(\d*\.?\d+\)).*(?<address>0x[a-fA-F0-9]{40}).*/, 'gm'),
+    send: new RegExp(/(?<alias>[\w\-]+\.eth).*(?<value>\[\d*\.?\d+\]).*(?<address>0x[a-fA-F0-9]{40}).*/, 'gm'),
   }
 
   constructor(ctx) {
@@ -29,7 +29,7 @@ export default class WalletCommand {
       const match = this.actions.exec(text)
 
       if (!match) {
-        this.onNoAction()
+        this._onNoAction()
         throw new Error(`[WalletCommand] No action for [${text}]`)
       }
 
@@ -65,7 +65,7 @@ export default class WalletCommand {
       }
 
       if (!exec[action]) {
-        this.onNoAction()
+        this._onNoAction()
         throw new Error(`[WalletCommand] No action for [${text}]`)
       }
 
@@ -78,7 +78,7 @@ export default class WalletCommand {
 
         const args = exec[action].args.exec(text)
         if (!args) {
-          this.onNoAction()
+          this._onNoAction()
           throw new Error(`[WalletCommand] Wrong options for [${action}], [${text}]`)
         }
 
@@ -93,8 +93,8 @@ export default class WalletCommand {
     })
   }
 
-  onNoAction() {
-    this.ctx.reply(`There is no action for your command. Use one of the following:\n\n/wallet new {alias}.eth\n/wallet list\n/wallet {alias}.eth balance\n/wallet {alias}.eth qrcode\n/wallet {alias}.eth send ({value in ETH}) to {address}`)
+  private _onNoAction() {
+    this.ctx.reply(`There is no action for your command. Use one of the following:\n\n/wallet new { alias }.eth\n/wallet list\n/wallet { alias }.eth balance\n/wallet { alias }.eth qrcode\n/wallet { alias }.eth send [ { value in ETH } ] to {address}.\n\nNOTE: When sending ETH, make sure that the value is enclosed with [] brackets.\n\neg. "/wallet my-wallet-alias.eth send [0.5] to 0x24b2e8C86Cc5a378b184b64728dB1A8484D844eC"`)
   }
 
   onReceive = ({ alias }): Promise<string> => {
@@ -117,7 +117,7 @@ export default class WalletCommand {
         }) as Array<IWalletStruct>
 
         if (!wallet) {
-          this.ctx.reply(`There is no wallet with this alias: ${alias}`)
+          this.ctx.reply(`There is no wallet with this alias: ${alias}.\n\nUse "/wallet list" to see your wallets.`)
           throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
         }
 
@@ -172,9 +172,9 @@ export default class WalletCommand {
   onSend = ({ alias, value, address: to }): Promise<string> => {
     return new Promise(async (resolve, reject) => {
       try {
-        const _value: BigNumber = new BigNumber(value.replace(/\(|\)/gm, ''))
+        const _value: BigNumber = new BigNumber(value.replace(/\[|\]/gm, ''))
 
-        this.ctx.reply(`Sure, I will attempt to send Ξ${_value.toString()} to ${to} from your ${alias} wallet\n Wait a moment.`)
+        this.ctx.reply(`Sure, I will attempt to send Ξ${_value.toString()} to ${to} from your ${alias} wallet.\nThis may take a few seconds.`)
 
         const vaultContract = new VaultContract()
         vaultContract.connect()
@@ -192,7 +192,7 @@ export default class WalletCommand {
         }) as Array<IWalletStruct>
 
         if (!wallet) {
-          this.ctx.reply(`There is no wallet with this alias: ${alias}`)
+          this.ctx.reply(`There is no wallet with this alias: ${alias}.\n\nUse "/wallet list" to see your wallets.`)
           throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
         }
 
@@ -243,7 +243,7 @@ export default class WalletCommand {
         }) as Array<IWalletStruct>
 
         if (!wallet) {
-          this.ctx.reply(`There is no wallet with this alias: ${alias}`)
+          this.ctx.reply(`There is no wallet with this alias: ${alias}.\n\nUse "/wallet list" to see your wallets.`)
           throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
         }
 
