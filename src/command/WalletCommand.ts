@@ -13,8 +13,8 @@ export default class WalletCommand {
   actions = new RegExp(/(?<action>new|balance|list|receive|send|export).*/, 'gm')
   options = {
     new: new RegExp(/(?<alias>[\w\-]+\.eth)$/, 'gm'),
-    balance: new RegExp(/(?<alias>[\w\-]+\.eth)$/, 'gm'),
-    receive: new RegExp(/(?<alias>[\w\-]+\.eth)$/, 'gm'),
+    balance: new RegExp(/(?<alias>[\w\-]+\.eth)/, 'gm'),
+    receive: new RegExp(/(?<alias>[\w\-]+\.eth)/, 'gm'),
     send: new RegExp(/(?<alias>[\w\-]+\.eth).*(?<value>\(\d*\.?\d+\)).*(?<address>0x[a-fA-F0-9]{40}).*/, 'gm'),
   }
 
@@ -55,7 +55,7 @@ export default class WalletCommand {
       }
 
       if (!exec[action]) {
-        this.ctx.reply(`There is no action for your command. Please ensure that:\n\n- Your wallet alias ends with ".eth". eg. my-wallet-alias.eth`)
+        this.ctx.reply(`There is no action for your command. Please ensure that:\n\n- Your wallet alias ends with ".eth". eg. my-wallet-alias.eth\n- You are using one of these actions: /wallet new|balance|list|receive|send|export.\n\n Type "/wallet help" for more.`)
         throw new Error(`[WalletCommand] No action for [${text}]`)
       }
 
@@ -78,7 +78,7 @@ export default class WalletCommand {
     })
   }
 
-  onReceive = ([alias]): Promise<string> => {
+  onReceive = ({ alias }): Promise<string> => {
     return new Promise(async (resolve, reject) => {
       try {
         const vaultContract = new VaultContract()
@@ -95,6 +95,11 @@ export default class WalletCommand {
         ] = wallets.filter((w: IWalletStruct) => {
           return w._alias === alias
         }) as Array<IWalletStruct>
+
+        if (!wallet) {
+          this.ctx.reply(`There is no wallet with this alias: ${alias}`)
+          throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
+        }
 
         const qr = qrcode(0, 'H')
         qr.addData(wallet._address)
@@ -211,6 +216,11 @@ export default class WalletCommand {
         ] = wallets.filter((w: IWalletStruct) => {
           return w._alias === alias
         }) as Array<IWalletStruct>
+
+        if (!wallet) {
+          this.ctx.reply(`There is no wallet with this alias: ${alias}`)
+          throw new Error(`[WalletCommand] no wallet with specified alias [${alias}] for user [${this.ctx.from.id}]`)
+        }
 
         const wei = await vaultContract.web3.eth.getBalance(wallet._address)
         const balance = vaultContract.web3.utils.fromWei(wei)

@@ -37,7 +37,7 @@ describe('WalletCommandTest', () => {
     console.log(ctx.message.text)
   })
 
-  it('rejects a new wallet creation for Telegram UID', async () => {
+  it('REJECTS a NEW WALLET creation for Telegram UID', async () => {
     const ctx = new TelegramContextMock()
     ctx.update.message.text = `/wallet new ${ALIAS}`
     ctx.from.id = UID
@@ -52,7 +52,7 @@ describe('WalletCommandTest', () => {
     console.log(ctx.message.text)
   })
 
-  it('Gets a wallet balance for Telegram UID', async () => {
+  it('Gets a wallet BALANCE for Telegram UID', async () => {
     const ctx = new TelegramContextMock()
     ctx.update.message.text = `/wallet balance ${ALIAS}`
     ctx.from.id = UID
@@ -63,7 +63,22 @@ describe('WalletCommandTest', () => {
     console.log(ctx.message.text)
   })
 
-  it('Gets a list of wallets for Telegram UID', async () => {
+  it('FAILS on GETTING BALANCE of wallet for Telegram UID', async () => {
+    const ctx = new TelegramContextMock()
+    ctx.update.message.text = '/wallet balance my-wallet-aliassss.eth'
+    ctx.from.id = UID
+
+    const walletCommand = new WalletCommand(ctx)
+    try {
+      await walletCommand.reply()
+    } catch (error) {
+      console.error(error)
+      assert.instanceOf(error, Error)
+    }
+    console.log(ctx.message.text)
+  })
+
+  it('Gets a LIST of wallets for Telegram UID', async () => {
     const ctx = new TelegramContextMock()
     ctx.update.message.text = '/wallet list'
     ctx.from.id = UID
@@ -92,14 +107,29 @@ describe('WalletCommandTest', () => {
     console.log(ctx.message.text)
   })
 
-  // it('Generates a QR Code of a wallet address by alias for Telegram UID', async () => {
-  //   const ctx = new TelegramContextMock()
-  //   ctx.update.message.text = 'receive my-wallet_alias-3'
-  //   ctx.from.id = UID
+  it('FAILS when generating a QR Code on RECEIVE from wallet with WRONG ALIAS for Telegram UID', async () => {
+    const ctx = new TelegramContextMock()
+    ctx.update.message.text = '/wallet my-wallet_aliasss.eth receive'
+    ctx.from.id = UID
 
-  //   const walletCommand = new WalletCommand(ctx)
-  //   await walletCommand.reply()
+    const walletCommand = new WalletCommand(ctx)
+    try {
+      await walletCommand.reply()
+    } catch (error) {
+      console.error(error)
+      assert.instanceOf(error, Error)
+    }
+    console.log(ctx.message.text)
+  })
 
-  //   console.log(ctx.message.text)
-  // })
+  it('Generates a QR Code of a wallet address by alias for Telegram UID', async () => {
+    const ctx = new TelegramContextMock()
+    ctx.update.message.text = `/wallet receive ${ALIAS}`
+    ctx.from.id = UID
+
+    const walletCommand = new WalletCommand(ctx)
+    await walletCommand.reply()
+
+    console.log(ctx.messagePhoto)
+  })
 })
